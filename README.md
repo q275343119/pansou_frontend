@@ -40,7 +40,7 @@ npm install
 
 ```env
 # API配置
-VITE_API_BASE_URL=https://pansou.oneplus1.top
+VITE_API_BASE_URL=http://127.0.0.1:8888
 VITE_APP_NAME=盘搜
 VITE_APP_VERSION=1.0.0
 ```
