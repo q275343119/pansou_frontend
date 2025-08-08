@@ -1,21 +1,31 @@
-import React from 'react';
-import { Button } from '@douyinfe/semi-ui';
-import { IconSun, IconMoon } from '@douyinfe/semi-icons';
-import { useTheme } from '../../contexts/ThemeContext';
+import React from "react";
+import { Button, Tooltip } from "antd";
+import { SunOutlined, MoonOutlined } from "@ant-design/icons";
+import { useTheme } from "../../contexts/ThemeContext";
 
 const ThemeToggle: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <Button
-      icon={theme === 'light' ? <IconMoon /> : <IconSun />}
-      onClick={toggleTheme}
-      type="tertiary"
-      theme="borderless"
-      size="small"
-      aria-label={`切换到${theme === 'light' ? '暗色' : '亮色'}主题`}
-    />
+    <Tooltip title={theme === "light" ? "切换到暗色主题" : "切换到亮色主题"}>
+      <Button
+        type="text"
+        icon={theme === "light" ? <MoonOutlined /> : <SunOutlined />}
+        onClick={toggleTheme}
+        style={{
+          borderRadius: "50%",
+          width: 40,
+          height: 40,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "transparent",
+          border: "1px solid #d9d9d9",
+          color: "#666",
+        }}
+      />
+    </Tooltip>
   );
 };
 
-export default ThemeToggle; 
+export default ThemeToggle;
