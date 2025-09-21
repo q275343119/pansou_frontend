@@ -3,7 +3,9 @@ import { config } from '../config';
 
 // 通用请求函数
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const url = `${config.apiBaseUrl}${endpoint}`;
+  // 如果配置了API基础URL，使用完整URL；否则使用相对路径（通过代理）
+  const baseUrl = config.apiBaseUrl || '';
+  const url = baseUrl ? `${baseUrl}${endpoint}` : endpoint;
   
   console.log('API请求:', url, options);
   

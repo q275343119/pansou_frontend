@@ -1,20 +1,20 @@
+// src/App.tsx
 import React, { useState, useEffect } from "react";
-import {
-  Layout,
-  Typography,
-  Button,
-  message,
-  theme,
-  ConfigProvider,
-} from "antd";
+import { Layout, Typography, Toast, Spin } from "@douyinfe/semi-ui";
+import { IconMenu, IconSearch } from "@douyinfe/semi-icons";
 import SearchForm from "./components/SearchForm/SearchForm";
 import SearchResults from "./components/SearchResults/SearchResults";
+import SearchConfig, {
+  SearchConfigType,
+} from "./components/SearchConfig/SearchConfig";
 import ThemeToggle from "./components/ThemeToggle/ThemeToggle";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { searchResources, checkHealth } from "./services/api";
-import { SearchParams, SearchResponse } from "./types";
+import { SearchParams, SearchResponse, CLOUD_TYPES } from "./types";
+import { config } from "./config";
 
-const { Content } = Layout;
+const { Header, Sider, Content } = Layout;
+const { Title } = Typography;
 
 const AppContent: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -23,11 +23,38 @@ const AppContent: React.FC = () => {
   const [apiStatus, setApiStatus] = useState<
     "healthy" | "unhealthy" | "unknown"
   >("unknown");
+  const [keyword, setKeyword] = useState("");
+  const [siderCollapsed, setSiderCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [searchConfig, setSearchConfig] = useState<SearchConfigType>({
+    resultType: "merge",
+    sourceType: "all",
+    cloudTypes: Object.keys(CLOUD_TYPES), // 默认选择所有网盘类型
+    refresh: false,
+  });
   const { theme: currentTheme } = useTheme();
+
+  // 监听屏幕尺寸变化
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      // 移动端默认收起边栏
+      if (mobile && !siderCollapsed) {
+        setSiderCollapsed(true);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    // 初始化时检查
+    handleResize();
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, [siderCollapsed]);
 
   // 检查API健康状态
   useEffect(() => {
-    const checkHealth = async () => {
+    const checkApiHealth = async () => {
       try {
         await checkHealth();
         setApiStatus("healthy");
@@ -35,7 +62,7 @@ const AppContent: React.FC = () => {
         setApiStatus("unhealthy");
       }
     };
-    checkHealth();
+    checkApiHealth();
   }, []);
 
   const getTotalResults = (data: SearchResponse) => {
@@ -52,7 +79,7 @@ const AppContent: React.FC = () => {
 
   const handleSearch = async (params: SearchParams) => {
     if (!params.kw.trim()) {
-      message.error("请输入搜索关键词");
+      Toast.error("请输入搜索关键词");
       return;
     }
 
@@ -61,87 +88,162 @@ const AppContent: React.FC = () => {
     setSearchData(undefined);
 
     try {
-      const data = await searchResources(params);
+      // 合并搜索参数和配置
+      const searchParams: SearchParams = {
+        ...params,
+        res: searchConfig.resultType,
+        src: searchConfig.sourceType,
+        refresh: searchConfig.refresh,
+      };
+
+      if (searchConfig.cloudTypes.length > 0) {
+        searchParams.cloud_types = searchConfig.cloudTypes;
+      }
+
+      const data = await searchResources(searchParams);
       setSearchData(data);
       console.log("API返回数据:", data);
 
       const totalResults = getTotalResults(data);
       if (totalResults === 0) {
-        message.info("未找到相关资源");
+        Toast.info("未找到相关资源");
       } else {
-        message.success(`找到 ${totalResults} 个结果`);
+        Toast.success(`找到 ${totalResults} 个结果`);
       }
     } catch (err) {
       console.error("搜索失败:", err);
       setError(err instanceof Error ? err.message : "搜索失败，请稍后重试");
-      message.error("搜索失败，请稍后重试");
+      Toast.error("搜索失败，请稍后重试");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <ConfigProvider
-      theme={{
-        token: {
-          colorPrimary: "#ff2442",
-          borderRadius: 8,
-        },
-        algorithm:
-          currentTheme === "dark"
-            ? theme.darkAlgorithm
-            : theme.defaultAlgorithm,
-      }}
-    >
-      <Layout style={{ minHeight: "100vh" }}>
-        {/* 主要内容区域 */}
-        <Content
+    <Layout style={{ minHeight: "100vh" }}>
+      {/* 顶部Header区域 */}
+      <Header
+        style={{
+          backgroundColor: "var(--semi-color-nav-bg)",
+          borderBottom: "1px solid var(--semi-color-border)",
+          padding: "0 24px",
+          height: 64,
+          lineHeight: "64px",
+        }}
+      >
+        <div
           style={{
-            padding: "24px",
-            maxWidth: 1200,
-            margin: "0 auto",
-            width: "100%",
-            backgroundColor: currentTheme === "dark" ? "#141414" : "#f5f5f5",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
           }}
         >
-          {/* 主题切换按钮 - 移到右上角 */}
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div
+              style={{ cursor: "pointer", fontSize: 18 }}
+              onClick={() => setSiderCollapsed(!siderCollapsed)}
+            >
+              <IconMenu />
+            </div>
+            <Title
+              level={3}
+              style={{ margin: 0, color: "var(--semi-color-text-0)" }}
+            >
+              {config.appName}
+            </Title>
+          </div>
+
+          {/* 搜索表单放在Header */}
+          <div
+            style={{
+              flex: 1,
+              maxWidth: isMobile ? 300 : 600,
+              margin: isMobile ? "0 12px" : "0 24px",
+            }}
+          >
+            <SearchForm
+              onSearch={handleSearch}
+              loading={loading}
+              keyword={keyword}
+              setKeyword={setKeyword}
+            />
+          </div>
+
+          {/* 主题切换按钮 */}
+          <ThemeToggle />
+        </div>
+      </Header>
+
+      <Layout>
+        {/* 左侧边栏 */}
+        <Sider
+          collapsed={siderCollapsed}
+          width={280}
+          collapsedWidth={isMobile ? 0 : 80}
+          style={{
+            backgroundColor: "var(--semi-color-nav-bg)",
+            borderRight: "1px solid var(--semi-color-border)",
+            overflow: "auto",
+            position: isMobile ? "fixed" : "relative",
+            zIndex: isMobile ? 999 : "auto",
+            height: isMobile ? "100vh" : "auto",
+            top: isMobile ? 0 : "auto",
+            left: isMobile ? (siderCollapsed ? -280 : 0) : "auto",
+            transition: isMobile ? "left 0.3s ease" : "width 0.3s ease",
+            boxShadow:
+              isMobile && !siderCollapsed
+                ? "2px 0 8px rgba(0, 0, 0, 0.15)"
+                : "none",
+          }}
+        >
+          {!siderCollapsed && <SearchConfig onConfigChange={setSearchConfig} />}
+        </Sider>
+
+        {/* 移动端遮罩层 */}
+        {isMobile && !siderCollapsed && (
           <div
             style={{
               position: "fixed",
-              top: "16px",
-              right: "16px",
-              zIndex: 1000,
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(0, 0, 0, 0.3)",
+              zIndex: 998,
             }}
-          >
-            <ThemeToggle />
-          </div>
+            onClick={() => setSiderCollapsed(true)}
+          />
+        )}
 
+        {/* 主要内容区域 */}
+        <Content
+          style={{
+            padding: 24,
+            backgroundColor: "var(--semi-color-bg-1)",
+            overflow: "auto",
+          }}
+        >
           {/* API状态警告 */}
           {apiStatus === "unhealthy" && (
             <div
               style={{
                 padding: "12px 16px",
-                backgroundColor: "#fff2e8",
-                border: "1px solid #ffbb96",
-                borderRadius: 8,
+                backgroundColor: "var(--semi-color-warning-light-default)",
+                border: "1px solid var(--semi-color-warning-light-active)",
+                borderRadius: 6,
                 marginBottom: 16,
-                color: "#d46b08",
+                color: "var(--semi-color-warning)",
               }}
             >
               ⚠️ API 服务可能不可用，搜索结果可能受到影响
             </div>
           )}
 
-          {/* 搜索表单 */}
-          <SearchForm onSearch={handleSearch} loading={loading} />
-
           {/* 搜索结果 */}
-          <div style={{ marginTop: 24 }}>
-            <SearchResults data={searchData} loading={loading} error={error} />
-          </div>
+          <SearchResults data={searchData} loading={loading} error={error} />
         </Content>
       </Layout>
-    </ConfigProvider>
+    </Layout>
   );
 };
 

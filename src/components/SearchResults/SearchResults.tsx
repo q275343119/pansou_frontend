@@ -1,3 +1,4 @@
+// src/components/SearchResults/SearchResults.tsx
 import React, { useState } from "react";
 import {
   Card,
@@ -10,9 +11,9 @@ import {
   Tooltip,
   Tabs,
   Space,
-  message,
-} from "antd";
-import { CopyOutlined, LinkOutlined } from "@ant-design/icons";
+  Toast,
+} from "@douyinfe/semi-ui";
+import { IconCopy, IconLink } from "@douyinfe/semi-icons";
 import { SearchResponse, MergedResult, CLOUD_TYPES } from "../../types";
 import { copyToClipboard } from "../../services/api";
 
@@ -35,20 +36,20 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   const handleCopyLink = async (url: string) => {
     try {
       await copyToClipboard(url);
-      message.success("链接已复制到剪贴板");
+      Toast.success("链接已复制到剪贴板");
     } catch (err) {
       console.error("复制失败:", err);
-      message.error("复制失败");
+      Toast.error("复制失败");
     }
   };
 
   const handleCopyPassword = async (password: string) => {
     try {
       await copyToClipboard(password);
-      message.success("密码已复制到剪贴板");
+      Toast.success("密码已复制到剪贴板");
     } catch (err) {
       console.error("复制失败:", err);
-      message.error("复制失败");
+      Toast.error("复制失败");
     }
   };
 
@@ -84,6 +85,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
       key={`card-${cloudType}-${resource.url}-${index}`}
       style={{
         marginBottom: 12,
+        borderRadius: 8,
       }}
       bodyStyle={{ padding: 16 }}
     >
@@ -102,7 +104,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
               strong
               style={{
                 fontSize: 16,
-                color: "#333",
+                color: "var(--semi-color-text-0)",
                 display: "block",
                 marginBottom: 4,
               }}
@@ -120,11 +122,11 @@ const SearchResults: React.FC<SearchResultsProps> = ({
             </Tag>
           </div>
           <Space>
-            <Tooltip title="复制链接">
+            <Tooltip content="复制链接">
               <Button
-                type="text"
+                theme="borderless"
                 size="small"
-                icon={<LinkOutlined />}
+                icon={<IconLink />}
                 onClick={() => handleCopyLink(resource.url)}
               />
             </Tooltip>
@@ -139,15 +141,15 @@ const SearchResults: React.FC<SearchResultsProps> = ({
               alignItems: "center",
               gap: 8,
               padding: "8px 12px",
-              backgroundColor: "rgba(76, 175, 80, 0.1)",
+              backgroundColor: "var(--semi-color-success-light-default)",
               borderRadius: 6,
-              border: "1px solid rgba(76, 175, 80, 0.3)",
+              border: "1px solid var(--semi-color-success-light-active)",
             }}
           >
             <Text
               style={{
                 fontWeight: 600,
-                color: "#666",
+                color: "var(--semi-color-text-1)",
                 fontSize: 14,
               }}
             >
@@ -156,17 +158,17 @@ const SearchResults: React.FC<SearchResultsProps> = ({
             <Text
               code
               style={{
-                color: "#4caf50",
+                color: "var(--semi-color-success)",
                 fontSize: 14,
               }}
             >
               {resource.password}
             </Text>
-            <Tooltip title="复制密码">
+            <Tooltip content="复制密码">
               <Button
-                type="text"
+                theme="borderless"
                 size="small"
-                icon={<CopyOutlined />}
+                icon={<IconCopy />}
                 onClick={() => handleCopyPassword(resource.password)}
               />
             </Tooltip>
@@ -177,7 +179,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
         {resource.note && (
           <Text
             style={{
-              color: "#666",
+              color: "var(--semi-color-text-1)",
               fontSize: 14,
               lineHeight: 1.5,
             }}
@@ -196,7 +198,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
         >
           <Text
             style={{
-              color: "#999",
+              color: "var(--semi-color-text-2)",
               fontSize: 12,
             }}
           >
@@ -204,7 +206,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
           </Text>
           <Text
             style={{
-              color: "#999",
+              color: "var(--semi-color-text-2)",
               fontSize: 12,
             }}
           >
@@ -224,7 +226,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                 height={60}
                 style={{
                   borderRadius: 6,
-                  border: "1px solid rgba(0, 0, 0, 0.08)",
+                  border: "1px solid var(--semi-color-border)",
                 }}
               />
             ))}
@@ -237,10 +239,12 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   // 加载状态
   if (loading) {
     return (
-      <Card>
+      <Card style={{ borderRadius: 8 }}>
         <div style={{ textAlign: "center", padding: "40px 20px" }}>
           <Spin size="large" />
-          <div style={{ marginTop: 16, color: "#666" }}>正在搜索资源...</div>
+          <div style={{ marginTop: 16, color: "var(--semi-color-text-1)" }}>
+            正在搜索资源...
+          </div>
         </div>
       </Card>
     );
@@ -249,8 +253,11 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   // 错误状态
   if (error) {
     return (
-      <Card>
-        <Empty description={error} style={{ color: "#666" }} />
+      <Card style={{ borderRadius: 8 }}>
+        <Empty
+          description={error}
+          style={{ color: "var(--semi-color-text-1)" }}
+        />
       </Card>
     );
   }
@@ -290,7 +297,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     return (
       <div>
         {/* 结果统计头部 */}
-        <Card style={{ marginBottom: 16 }}>
+        <Card style={{ marginBottom: 16, borderRadius: 8 }}>
           <div
             style={{
               display: "flex",
@@ -299,10 +306,10 @@ const SearchResults: React.FC<SearchResultsProps> = ({
             }}
           >
             <Title
-              level={4}
+              heading={4}
               style={{
                 margin: 0,
-                color: "#333",
+                color: "var(--semi-color-text-0)",
                 fontWeight: 600,
               }}
             >
@@ -322,7 +329,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
         </Card>
 
         {/* Tab布局 */}
-        <Card>
+        <Card style={{ borderRadius: 8 }}>
           <Tabs activeKey={activeTab || ""} onChange={setActiveTab} type="card">
             {cloudTypes
               .filter((cloudType) => {
@@ -373,7 +380,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                         </Tag>
                       </span>
                     }
-                    key={cloudType}
+                    itemKey={cloudType}
                   >
                     <div style={{ padding: "20px 0" }}>
                       <div
@@ -401,7 +408,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   if (hasResultsData(data)) {
     return (
       <div>
-        <Card style={{ marginBottom: 16 }}>
+        <Card style={{ marginBottom: 16, borderRadius: 8 }}>
           <div
             style={{
               display: "flex",
@@ -410,10 +417,10 @@ const SearchResults: React.FC<SearchResultsProps> = ({
             }}
           >
             <Title
-              level={4}
+              heading={4}
               style={{
                 margin: 0,
-                color: "#333",
+                color: "var(--semi-color-text-0)",
                 fontWeight: 600,
               }}
             >
@@ -431,7 +438,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
             </Tag>
           </div>
         </Card>
-        <Card>
+        <Card style={{ borderRadius: 8 }}>
           <div style={{ padding: "20px" }}>
             <div
               style={{
@@ -445,6 +452,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                   key={`result-${index}`}
                   style={{
                     marginBottom: 12,
+                    borderRadius: 8,
                   }}
                   bodyStyle={{ padding: 16 }}
                 >
@@ -468,7 +476,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                           strong
                           style={{
                             fontSize: 16,
-                            color: "#333",
+                            color: "var(--semi-color-text-0)",
                             display: "block",
                             marginBottom: 8,
                           }}
@@ -477,7 +485,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                         </Text>
                         <Text
                           style={{
-                            color: "#666",
+                            color: "var(--semi-color-text-1)",
                             fontSize: 14,
                             lineHeight: 1.5,
                           }}
@@ -495,7 +503,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                     >
                       <Text
                         style={{
-                          color: "#999",
+                          color: "var(--semi-color-text-2)",
                           fontSize: 12,
                         }}
                       >
@@ -514,8 +522,11 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 
   // 空状态
   return (
-    <Card>
-      <Empty description="未找到相关资源" style={{ color: "#666" }} />
+    <Card style={{ borderRadius: 8 }}>
+      <Empty
+        description="未找到相关资源"
+        style={{ color: "var(--semi-color-text-1)" }}
+      />
     </Card>
   );
 };

@@ -1,37 +1,27 @@
+// src/components/SearchForm/SearchForm.tsx
 import React, { useState } from "react";
-import {
-  Input,
-  Button,
-  Select,
-  Checkbox,
-  Collapse,
-  Tag,
-  Space,
-  Typography,
-  Card,
-} from "antd";
-import { SearchOutlined, FilterOutlined } from "@ant-design/icons";
-import { SearchParams, CLOUD_TYPES } from "../../types";
-
-const { Title, Text } = Typography;
-const { Option } = Select;
+import { Input, Button } from "@douyinfe/semi-ui";
+import { IconSearch } from "@douyinfe/semi-icons";
+import { SearchParams } from "../../types";
 
 interface SearchFormProps {
   onSearch: (params: SearchParams) => void;
   loading?: boolean;
+  keyword?: string;
+  setKeyword?: (keyword: string) => void;
 }
 
 const SearchForm: React.FC<SearchFormProps> = ({
   onSearch,
   loading = false,
+  keyword: propKeyword,
+  setKeyword: propSetKeyword,
 }) => {
-  const [keyword, setKeyword] = useState("");
-  const [resultType, setResultType] = useState<"all" | "results" | "merge">(
-    "merge"
-  );
-  const [sourceType, setSourceType] = useState<"all" | "tg" | "plugin">("all");
-  const [cloudTypes, setCloudTypes] = useState<string[]>([]);
-  const [refresh, setRefresh] = useState(false);
+  const [internalKeyword, setInternalKeyword] = useState("");
+
+  // 使用外部传入的keyword和setKeyword，如果没有则使用内部状态
+  const keyword = propKeyword ?? internalKeyword;
+  const setKeyword = propSetKeyword ?? setInternalKeyword;
 
   const handleSearch = () => {
     if (!keyword.trim()) {
@@ -40,14 +30,10 @@ const SearchForm: React.FC<SearchFormProps> = ({
 
     const searchParams: SearchParams = {
       kw: keyword,
-      res: resultType,
-      src: sourceType,
-      refresh,
+      res: "merge", // 默认按类型合并，配置项会在Sider中
+      src: "all", // 默认全部来源，配置项会在Sider中
+      refresh: false, // 默认不刷新，配置项会在Sider中
     };
-
-    if (cloudTypes.length > 0) {
-      searchParams.cloud_types = cloudTypes;
-    }
 
     onSearch(searchParams);
   };
@@ -58,154 +44,34 @@ const SearchForm: React.FC<SearchFormProps> = ({
     }
   };
 
-  // 高级搜索选项内容
-  const advancedContent = (
-    <Space direction="vertical" size="large" style={{ width: "100%" }}>
-      {/* 网盘类型选择 */}
-      <div>
-        <Text
-          strong
-          style={{ color: "#333", display: "block", marginBottom: 8 }}
-        >
-          网盘类型:
-        </Text>
-        <Checkbox.Group
-          value={cloudTypes}
-          onChange={setCloudTypes}
-          style={{ display: "flex", flexWrap: "wrap", gap: 8 }}
-        >
-          {Object.entries(CLOUD_TYPES).map(([key, value]) => (
-            <Checkbox key={key} value={key} style={{ color: "#666" }}>
-              {value}
-            </Checkbox>
-          ))}
-        </Checkbox.Group>
-      </div>
-
-      {/* 已选择的网盘类型 */}
-      {cloudTypes.length > 0 && (
-        <div>
-          <Text
-            strong
-            style={{ color: "#333", display: "block", marginBottom: 8 }}
-          >
-            已选择:
-          </Text>
-          <Space wrap>
-            {cloudTypes.map((type) => (
-              <Tag
-                key={type}
-                closable
-                onClose={() =>
-                  setCloudTypes(cloudTypes.filter((t) => t !== type))
-                }
-                style={{ borderRadius: 6 }}
-              >
-                {CLOUD_TYPES[type as keyof typeof CLOUD_TYPES] || type}
-              </Tag>
-            ))}
-          </Space>
-        </div>
-      )}
-
-      {/* 其他选项 */}
-      <div>
-        <Text
-          strong
-          style={{ color: "#333", display: "block", marginBottom: 8 }}
-        >
-          刷新缓存:
-        </Text>
-        <Checkbox
-          checked={refresh}
-          onChange={(e) => setRefresh(e.target.checked)}
-          style={{ color: "#666" }}
-        >
-          强制刷新
-        </Checkbox>
-      </div>
-    </Space>
-  );
-
   return (
-    <Card style={{ marginBottom: 24 }}>
-      {/* 主要搜索区域 */}
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          {/* 搜索输入框 */}
-          <div style={{ flex: 1 }}>
-            <Input
-              size="large"
-              placeholder="输入搜索关键词..."
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              onKeyPress={handleKeyPress}
-              prefix={<SearchOutlined style={{ color: "#666" }} />}
-              style={{ borderRadius: 8 }}
-            />
-          </div>
-
-          {/* 搜索按钮 */}
-          <Button
-            type="primary"
-            size="large"
-            loading={loading}
-            onClick={handleSearch}
-            icon={<SearchOutlined />}
-            style={{
-              borderRadius: 8,
-              background: "#1890ff",
-              borderColor: "#1890ff",
-            }}
-          >
-            搜索
-          </Button>
-        </div>
-
-        {/* 搜索选项 */}
-        <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
-          <Select
-            value={resultType}
-            onChange={setResultType}
-            style={{ width: 140 }}
-            placeholder="结果类型"
-          >
-            <Option value="all">全部结果</Option>
-            <Option value="results">原始结果</Option>
-            <Option value="merge">按类型合并</Option>
-          </Select>
-
-          <Select
-            value={sourceType}
-            onChange={setSourceType}
-            style={{ width: 140 }}
-            placeholder="数据来源"
-          >
-            <Option value="all">全部来源</Option>
-            <Option value="tg">Telegram</Option>
-            <Option value="plugin">插件</Option>
-          </Select>
-        </div>
-      </div>
-
-      {/* 高级搜索选项 */}
-      <Collapse
-        ghost
-        size="small"
-        items={[
-          {
-            key: "1",
-            label: (
-              <span style={{ color: "#333", fontWeight: 500 }}>
-                <FilterOutlined style={{ marginRight: 8 }} />
-                高级搜索选项
-              </span>
-            ),
-            children: advancedContent,
-          },
-        ]}
+    <div
+      style={{ display: "flex", gap: 8, alignItems: "center", width: "100%" }}
+    >
+      <Input
+        placeholder="输入搜索关键词..."
+        value={keyword}
+        onChange={(value) => setKeyword(value)}
+        onKeyPress={handleKeyPress}
+        prefix={<IconSearch style={{ color: "var(--semi-color-text-2)" }} />}
+        style={{
+          borderRadius: 6,
+          flex: 1,
+        }}
       />
-    </Card>
+      <Button
+        theme="solid"
+        type="primary"
+        loading={loading}
+        onClick={handleSearch}
+        icon={<IconSearch />}
+        style={{
+          borderRadius: 6,
+        }}
+      >
+        搜索
+      </Button>
+    </div>
   );
 };
 
