@@ -17,7 +17,16 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
-    open: true
+    open: false,
+    allowedHosts: [
+      'your.domain.com' // 加上你的域名
+      ],
+      proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8000', // 盘搜服务地址
+        changeOrigin: true
+      }
+    }
   },
   define: {
     'import.meta.env.VITE_API_BASE_URL': JSON.stringify(process.env.VITE_API_BASE_URL || ''),
