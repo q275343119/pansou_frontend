@@ -32,6 +32,7 @@ export default defineConfig({
     'import.meta.env.VITE_API_BASE_URL': JSON.stringify(process.env.VITE_API_BASE_URL || ''),
     'import.meta.env.VITE_APP_NAME': JSON.stringify(process.env.VITE_APP_NAME || '盘搜'),
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(process.env.VITE_APP_VERSION || '1.0.0'),
+    'import.meta.env.VITE_GIT_REPO_URL': JSON.stringify(process.env.VITE_GIT_REPO_URL || ''),
     'import.meta.env.MODE': JSON.stringify('development')
   }
 }) 

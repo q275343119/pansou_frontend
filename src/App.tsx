@@ -8,6 +8,7 @@ import SearchConfig, {
   SearchConfigType,
 } from "./components/SearchConfig/SearchConfig";
 import ThemeToggle from "./components/ThemeToggle/ThemeToggle";
+import GitHubLink from "./components/GitHubLink/GitHubLink";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { searchResources, checkHealth } from "./services/api";
 import { SearchParams, SearchResponse, CLOUD_TYPES } from "./types";
@@ -169,8 +170,13 @@ const AppContent: React.FC = () => {
             />
           </div>
 
-          {/* 主题切换按钮 */}
-          <ThemeToggle />
+          {/* 右侧按钮组 */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {/* GitHub 链接 */}
+            <GitHubLink />
+            {/* 主题切换按钮 */}
+            <ThemeToggle />
+          </div>
         </div>
       </Header>
 
