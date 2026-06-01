@@ -1,3 +1,8 @@
+/*
+ * @Author: 杨永乾
+ * @Date: 2026-05-29 17:41:56
+ * @Description:
+ */
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import * as dotenv from 'dotenv'
@@ -19,11 +24,11 @@ export default defineConfig({
     port: 3000,
     open: false,
     allowedHosts: [
-      'your.domain.com' // 加上你的域名
+      'https://pansou.oneplus1.top/' // 加上你的域名
       ],
       proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8000', // 盘搜服务地址
+        target: 'https://pansou.oneplus1.top', // 盘搜服务地址
         changeOrigin: true
       }
     }
@@ -35,4 +40,4 @@ export default defineConfig({
     'import.meta.env.VITE_GIT_REPO_URL': JSON.stringify(process.env.VITE_GIT_REPO_URL || ''),
     'import.meta.env.MODE': JSON.stringify('development')
   }
-}) 
+})

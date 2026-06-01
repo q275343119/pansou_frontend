@@ -1,6 +1,6 @@
 // src/App.tsx
 import React, { useState, useEffect } from "react";
-import { Layout, Typography, Toast, Spin } from "@douyinfe/semi-ui";
+import { Layout, Typography, Toast, Spin, Empty } from "@douyinfe/semi-ui";
 import { IconMenu, IconSearch } from "@douyinfe/semi-icons";
 import SearchForm from "./components/SearchForm/SearchForm";
 import SearchResults from "./components/SearchResults/SearchResults";
@@ -20,7 +20,7 @@ const { Title } = Typography;
 const AppContent: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
-  const [searchData, setSearchData] = useState<SearchResponse | undefined>();
+  const [searchData, setSearchData] = useState<SearchResponse | any>([]);
   const [apiStatus, setApiStatus] = useState<
     "healthy" | "unhealthy" | "unknown"
   >("unknown");
@@ -121,72 +121,72 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      {/* 顶部Header区域 */}
+    <Layout style={ { minHeight: "100vh" } }>
+      {/* 顶部Header区域 */ }
       <Header
-        style={{
+        style={ {
           backgroundColor: "var(--semi-color-nav-bg)",
           borderBottom: "1px solid var(--semi-color-border)",
           padding: "0 24px",
           height: 64,
           lineHeight: "64px",
-        }}
+        } }
       >
         <div
-          style={{
+          style={ {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-          }}
+          } }
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={ { display: "flex", alignItems: "center", gap: 16 } }>
             <div
-              style={{ cursor: "pointer", fontSize: 18 }}
-              onClick={() => setSiderCollapsed(!siderCollapsed)}
+              style={ { cursor: "pointer", fontSize: 18 } }
+              onClick={ () => setSiderCollapsed(!siderCollapsed) }
             >
               <IconMenu />
             </div>
             <Title
-              level={3}
-              style={{ margin: 0, color: "var(--semi-color-text-0)" }}
+              level={ 3 }
+              style={ { margin: 0, color: "var(--semi-color-text-0)" } }
             >
-              {config.appName}
+              { config.appName }
             </Title>
           </div>
 
-          {/* 搜索表单放在Header */}
+          {/* 搜索表单放在Header */ }
           <div
-            style={{
+            style={ {
               flex: 1,
               maxWidth: isMobile ? 300 : 600,
               margin: isMobile ? "0 12px" : "0 24px",
-            }}
+            } }
           >
             <SearchForm
-              onSearch={handleSearch}
-              loading={loading}
-              keyword={keyword}
-              setKeyword={setKeyword}
+              onSearch={ handleSearch }
+              loading={ loading }
+              keyword={ keyword }
+              setKeyword={ setKeyword }
             />
           </div>
 
-          {/* 右侧按钮组 */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {/* GitHub 链接 */}
+          {/* 右侧按钮组 */ }
+          <div style={ { display: "flex", alignItems: "center", gap: 8 } }>
+            {/* GitHub 链接 */ }
             <GitHubLink />
-            {/* 主题切换按钮 */}
+            {/* 主题切换按钮 */ }
             <ThemeToggle />
           </div>
         </div>
       </Header>
 
       <Layout>
-        {/* 左侧边栏 */}
+        {/* 左侧边栏 */ }
         <Sider
-          collapsed={siderCollapsed}
-          width={280}
-          collapsedWidth={isMobile ? 0 : 80}
-          style={{
+          collapsed={ siderCollapsed }
+          width={ 280 }
+          collapsedWidth={ isMobile ? 0 : 80 }
+          style={ {
             backgroundColor: "var(--semi-color-nav-bg)",
             borderRight: "1px solid var(--semi-color-border)",
             overflow: "auto",
@@ -200,15 +200,15 @@ const AppContent: React.FC = () => {
               isMobile && !siderCollapsed
                 ? "2px 0 8px rgba(0, 0, 0, 0.15)"
                 : "none",
-          }}
+          } }
         >
-          {!siderCollapsed && <SearchConfig onConfigChange={setSearchConfig} />}
+          { !siderCollapsed && <SearchConfig onConfigChange={ setSearchConfig } /> }
         </Sider>
 
-        {/* 移动端遮罩层 */}
-        {isMobile && !siderCollapsed && (
+        {/* 移动端遮罩层 */ }
+        { isMobile && !siderCollapsed && (
           <div
-            style={{
+            style={ {
               position: "fixed",
               top: 0,
               left: 0,
@@ -216,37 +216,37 @@ const AppContent: React.FC = () => {
               bottom: 0,
               backgroundColor: "rgba(0, 0, 0, 0.3)",
               zIndex: 998,
-            }}
-            onClick={() => setSiderCollapsed(true)}
+            } }
+            onClick={ () => setSiderCollapsed(true) }
           />
-        )}
+        ) }
 
-        {/* 主要内容区域 */}
+        {/* 主要内容区域 */ }
         <Content
-          style={{
+          style={ {
             padding: 24,
             backgroundColor: "var(--semi-color-bg-1)",
             overflow: "auto",
-          }}
+          } }
         >
-          {/* API状态警告 */}
-          {apiStatus === "unhealthy" && (
+          {/* API状态警告 */ }
+          { apiStatus === "unhealthy" && (
             <div
-              style={{
+              style={ {
                 padding: "12px 16px",
                 backgroundColor: "var(--semi-color-warning-light-default)",
                 border: "1px solid var(--semi-color-warning-light-active)",
                 borderRadius: 6,
                 marginBottom: 16,
                 color: "var(--semi-color-warning)",
-              }}
+              } }
             >
               ⚠️ API 服务可能不可用，搜索结果可能受到影响
             </div>
-          )}
+          ) }
 
-          {/* 搜索结果 */}
-          <SearchResults data={searchData} loading={loading} error={error} />
+          {/* 搜索结果 */ }
+          <SearchResults data={ searchData } loading={ loading } error={ error } />
         </Content>
       </Layout>
     </Layout>
